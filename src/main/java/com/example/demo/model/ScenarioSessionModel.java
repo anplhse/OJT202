@@ -4,7 +4,6 @@ import java.util.Date;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.demo.dto.InfoCPEDTO;
@@ -26,6 +25,5 @@ public class ScenarioSessionModel {
     private InfoCPEDTO analysisAfter;
     @CreatedDate
     private Date createdAt;
-    @LastModifiedDate
-	private Date updatedAt;
+    
 }

@@ -65,7 +65,6 @@ public class ScenarioServiceImpl implements ScenarioService {
             scenario.setAnalysisBefore(scenario.getAnalysisBefore());
             scenario.setAnalysisAfter(scenario.getAnalysisAfter());
             scenario.setCreatedAt(new Date(System.currentTimeMillis()));
-            scenario.setUpdatedAt(new Date(System.currentTimeMillis()));
 
             scenarioRepo.save(scenario);
         }
@@ -107,7 +106,6 @@ public class ScenarioServiceImpl implements ScenarioService {
             if (scenario.getAnalysisAfter() != null) {
                 scenarioToUpdate.setAnalysisAfter(scenarioToUpdate.getAnalysisAfter());
             }
-            scenarioToUpdate.setUpdatedAt(new Date(System.currentTimeMillis()));
 
             scenarioRepo.save(scenarioToUpdate);
         } else {
@@ -150,7 +148,7 @@ public class ScenarioServiceImpl implements ScenarioService {
                 scenarioPage.getTotalElements(),
                 scenarioPage.getTotalPages());
 
-        return new ScenarioPageResponse(scenarioPage.getContent(),pageInfo);
+        return new ScenarioPageResponse(scenarioPage.getContent(), pageInfo);
     }
 
 }
