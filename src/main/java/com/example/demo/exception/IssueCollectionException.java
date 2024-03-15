@@ -13,6 +13,18 @@ public class IssueCollectionException extends Exception {
 	}
 
 	public static String IssueAlreadyExists() {
-		return "Issue with given name already exists";
+		return "Issue with with given name already exists!";
+	}
+
+	public static String IssueNameNotFoundException(){
+		return "Sai MAC";
+	}
+
+	public static String RecommendNotFoundException() {
+		return "Hỗ trợ KH reset MAC trên tool inside";
+	}
+
+	public static String listIssueNotFoundException(){
+		return "WiFi kết nối được nhưng không truy cập được internet, Không truy cập được một số dịch vụ hoặc website";
 	}
 }

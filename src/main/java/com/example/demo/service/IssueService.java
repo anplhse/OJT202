@@ -9,11 +9,11 @@ public interface IssueService {
 
     public List<IssueModel> getAllIssues();
 
-    public IssueModel getIssueById(String id) throws IssueCollectionException;
+    public IssueModel getSingleIssueName(String id) throws IssueCollectionException;
 
-    public void createIssue(IssueModel issueName) throws IssueCollectionException;
+    public void createIssue(IssueModel issue) throws IssueCollectionException;
 
-    public void updateIssue(String id, IssueModel issueName) throws IssueCollectionException;
+    public void updateIssue(String id, IssueModel issue) throws IssueCollectionException;
 
-    public void deleteIssue(String id) throws IssueCollectionException;
+    public void deleteIssueById(String id) throws IssueCollectionException;
 }
