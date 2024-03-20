@@ -1,5 +1,7 @@
 package com.example.demo.service.impl;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -7,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,8 @@ import com.example.demo.exception.ScenarioCollectionException;
 import com.example.demo.model.ScenarioSessionModel;
 import com.example.demo.repository.ScenarioRepository;
 import com.example.demo.service.ScenarioService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVWriter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -123,32 +128,61 @@ public class ScenarioServiceImpl implements ScenarioService {
     }
 
     @Override
-    public List<ScenarioSessionModel> getScenariosByDateRange(LocalDate startDate, LocalDate endDate)
+    public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate, int page, int size)
             throws ScenarioCollectionException {
-        if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
-            throw new ScenarioCollectionException("Invalid date range");
-        }
-
         try {
-            List<ScenarioSessionModel> scenario = scenarioRepo.findByCreatedAtBetween(startDate.atStartOfDay(),
-                    endDate.atTime(23, 59, 59));
-            return scenario;
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ScenarioSessionModel> scenarioPage;
+
+            if (startDate != null && endDate != null) {
+                scenarioPage = scenarioRepo.findByCreatedAtBetween(startDate.atStartOfDay(), endDate.atTime(23, 59, 59),
+                        pageable);
+            } else {
+                scenarioPage = scenarioRepo.findAll(pageable);
+            }
+
+            PageInfo pageInfo = new PageInfo(scenarioPage.getNumber(), scenarioPage.getSize(),
+                    scenarioPage.getTotalElements(), scenarioPage.getTotalPages());
+            return new ScenarioPageResponse(scenarioPage.getContent(), pageInfo);
         } catch (Exception e) {
-            throw new ScenarioCollectionException("Error retrieving scenarios by date range: " + e.getMessage());
+            throw new ScenarioCollectionException("Error retrieving scenarios: " + e.getMessage());
         }
     }
 
     @Override
-    public ScenarioPageResponse getAllScenarios(Pageable pageable) {
-        Page<ScenarioSessionModel> scenarioPage = scenarioRepo.findAll(pageable);
+    public void convertScenarioResponseToCsv(ScenarioPageResponse response, String outputPath) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ScenarioSessionModel> scenarios = response.getContent();
+        PageInfo pageInfo = response.getPageInfo();
 
-        PageInfo pageInfo = new PageInfo(
-                scenarioPage.getNumber(),
-                scenarioPage.getSize(),
-                scenarioPage.getTotalElements(),
-                scenarioPage.getTotalPages());
+        try (CSVWriter writer = new CSVWriter(new FileWriter(outputPath))) {
 
-        return new ScenarioPageResponse(scenarioPage.getContent(), pageInfo);
+            writer.writeNext(new String[] { "ID", "Chart ID", "Contract", "Session ID", "Finished", "Current Scenario",
+                    "Email", "Analysis Before", "Analysis After", "Created At" });
+
+            for (ScenarioSessionModel scenario : scenarios) {
+                String[] data = new String[] {
+                        scenario.getId(),
+                        scenario.getChartId(),
+                        scenario.getContract(),
+                        scenario.getSessionId(),
+                        String.valueOf(scenario.getFinished()),
+                        String.valueOf(scenario.getCurrentScenario()),
+                        scenario.getEmail(),
+                        objectMapper.writeValueAsString(scenario.getAnalysisBefore()),
+                        objectMapper.writeValueAsString(scenario.getAnalysisAfter()),
+                        String.valueOf(scenario.getCreatedAt())
+                };
+                writer.writeNext(data);
+            }
+
+            writer.writeNext(new String[] { "Page Number", "Page Size", "Total Elements", "Total Pages" });
+            writer.writeNext(new String[] {
+                    String.valueOf(pageInfo.getPageNumber()),
+                    String.valueOf(pageInfo.getPageSize()),
+                    String.valueOf(pageInfo.getTotalElements()),
+                    String.valueOf(pageInfo.getTotalPages())
+            });
+        }
     }
-
 }

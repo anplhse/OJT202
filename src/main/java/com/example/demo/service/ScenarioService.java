@@ -1,9 +1,8 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
-
-import org.springframework.data.domain.Pageable;
 
 import com.example.demo.dto.ScenarioPageResponse;
 import com.example.demo.exception.ScenarioCollectionException;
@@ -21,7 +20,8 @@ public interface ScenarioService {
 
     public void deleteScenarioById(String id) throws ScenarioCollectionException;
 
-    public List<ScenarioSessionModel> getScenariosByDateRange(LocalDate startDate, LocalDate endDate) throws ScenarioCollectionException;
+    public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate, int page, int size)
+            throws ScenarioCollectionException;
 
-   public ScenarioPageResponse getAllScenarios(Pageable pageable)throws ScenarioCollectionException;
+    public void convertScenarioResponseToCsv(ScenarioPageResponse response, String outputPath) throws IOException;
 }

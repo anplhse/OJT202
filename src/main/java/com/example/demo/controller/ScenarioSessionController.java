@@ -1,10 +1,8 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,22 +35,23 @@ public class ScenarioSessionController {
         return new ResponseEntity<ScenarioSessionModel>(scenario, HttpStatus.OK);
     }
 
-    @GetMapping("/ScenarioSessionModel/byDateRange")
-    public ResponseEntity<?> getScenariosByDateRange(
-            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate)
-            throws ScenarioCollectionException {
-        List<ScenarioSessionModel> scenario = scenarioService.getScenariosByDateRange(startDate, endDate);
-        return new ResponseEntity<>(scenario, scenario.size() > 0 ? HttpStatus.OK : HttpStatus.NOT_FOUND);
-    }
-
     @GetMapping("/ScenarioSessionModel")
     public ResponseEntity<?> getAllScenarios(
+            @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) throws Exception{
-        Pageable pageable = PageRequest.of(page, size);
-        ScenarioPageResponse response = scenarioService.getAllScenarios(pageable);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+            @RequestParam(defaultValue = "10") int size) {
+
+        try {
+            ScenarioPageResponse response = scenarioService.getAllScenarios(startDate, endDate, page, size);
+            scenarioService.convertScenarioResponseToCsv(response, "scenario.csv");
+            return new ResponseEntity<>("CSV file generated successfully", HttpStatus.OK);
+        } catch (ScenarioCollectionException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (IOException e) {
+            return new ResponseEntity<>("Error generating CSV file: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/ScenarioSessionModel/{id}")
