@@ -25,5 +25,4 @@ public class ScenarioSessionModel {
     private InfoCPEDTO analysisAfter;
     @CreatedDate
     private Date createdAt;
-    
 }
