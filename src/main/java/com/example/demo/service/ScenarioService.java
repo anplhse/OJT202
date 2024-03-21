@@ -20,7 +20,7 @@ public interface ScenarioService {
 
     public void deleteScenarioById(String id) throws ScenarioCollectionException;
 
-    public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate, int page, int size)
+    public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate)
             throws ScenarioCollectionException;
 
     public void convertScenarioResponseToCsv(ScenarioPageResponse response, String outputPath) throws IOException;

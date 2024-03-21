@@ -38,12 +38,10 @@ public class ScenarioSessionController {
     @GetMapping("/ScenarioSessionModel")
     public ResponseEntity<?> getAllScenarios(
             @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-            @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
 
         try {
-            ScenarioPageResponse response = scenarioService.getAllScenarios(startDate, endDate, page, size);
+            ScenarioPageResponse response = scenarioService.getAllScenarios(startDate, endDate);
             scenarioService.convertScenarioResponseToCsv(response, "scenario.csv");
             return new ResponseEntity<>("CSV file generated successfully", HttpStatus.OK);
         } catch (ScenarioCollectionException e) {

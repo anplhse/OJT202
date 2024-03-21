@@ -9,11 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.PageInfo;
 import com.example.demo.dto.ScenarioPageResponse;
 import com.example.demo.exception.ScenarioCollectionException;
 import com.example.demo.model.ScenarioSessionModel;
@@ -128,10 +126,10 @@ public class ScenarioServiceImpl implements ScenarioService {
     }
 
     @Override
-    public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate, int page, int size)
+    public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate)
             throws ScenarioCollectionException {
         try {
-            Pageable pageable = PageRequest.of(page, size);
+            Pageable pageable = Pageable.unpaged();
             Page<ScenarioSessionModel> scenarioPage;
 
             if (startDate != null && endDate != null) {
@@ -140,10 +138,7 @@ public class ScenarioServiceImpl implements ScenarioService {
             } else {
                 scenarioPage = scenarioRepo.findAll(pageable);
             }
-
-            PageInfo pageInfo = new PageInfo(scenarioPage.getNumber(), scenarioPage.getSize(),
-                    scenarioPage.getTotalElements(), scenarioPage.getTotalPages());
-            return new ScenarioPageResponse(scenarioPage.getContent(), pageInfo);
+            return new ScenarioPageResponse(scenarioPage.getContent());
         } catch (Exception e) {
             throw new ScenarioCollectionException("Error retrieving scenarios: " + e.getMessage());
         }
@@ -153,7 +148,6 @@ public class ScenarioServiceImpl implements ScenarioService {
     public void convertScenarioResponseToCsv(ScenarioPageResponse response, String outputPath) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         List<ScenarioSessionModel> scenarios = response.getContent();
-        PageInfo pageInfo = response.getPageInfo();
 
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputPath))) {
 
@@ -175,14 +169,6 @@ public class ScenarioServiceImpl implements ScenarioService {
                 };
                 writer.writeNext(data);
             }
-
-            writer.writeNext(new String[] { "Page Number", "Page Size", "Total Elements", "Total Pages" });
-            writer.writeNext(new String[] {
-                    String.valueOf(pageInfo.getPageNumber()),
-                    String.valueOf(pageInfo.getPageSize()),
-                    String.valueOf(pageInfo.getTotalElements()),
-                    String.valueOf(pageInfo.getTotalPages())
-            });
         }
     }
 }
