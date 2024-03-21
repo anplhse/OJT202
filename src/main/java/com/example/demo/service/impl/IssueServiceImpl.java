@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.IssueRequest;
 import com.example.demo.exception.IssueCollectionException;
 import com.example.demo.model.IssueModel;
 import com.example.demo.repository.IssueRepository;
@@ -36,24 +37,41 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public void createIssue(IssueModel issue) throws IssueCollectionException {
-        Optional<IssueModel> issueOptional = issueRepo.findByIssue(issue.getIssueName());
-        if (issueOptional.isPresent()) {
-            throw new IssueCollectionException(IssueCollectionException.IssueAlreadyExists());
-        } else if (issue.getIssueName() == null) {
+    public void createIssue(IssueRequest request) throws IssueCollectionException {
+
+        IssueModel issueModel = convertToIssueModel(request);
+
+        validateIssueModel(issueModel);
+
+        issueRepo.save(issueModel);
+    }
+
+    private IssueModel convertToIssueModel(IssueRequest request) {
+        IssueModel issueModel = new IssueModel();
+        issueModel.setIssueName(request.getIssueName());
+        issueModel.setRecommend(request.getRecommend());
+        issueModel.setListIssue(request.getListIssue());
+        issueModel.setProperties(request.getProperties());
+        return issueModel;
+    }
+
+    private void validateIssueModel(IssueModel issueModel) throws IssueCollectionException {
+        if (issueModel.getIssueName() == null) {
             throw new IssueCollectionException(IssueCollectionException.IssueNameNotFoundException());
-        } else if (issue.getRecommend() == null) {
+        }
+        if (issueModel.getRecommend() == null) {
             throw new IssueCollectionException(IssueCollectionException.RecommendNotFoundException());
-        } else if (issue.getListIssue() == null) {
+        }
+        if (issueModel.getListIssue() == null) {
             throw new IssueCollectionException(IssueCollectionException.listIssueNotFoundException());
-        } else {
+        }
+        if (issueModel.getProperties() == null) {
+            throw new IssueCollectionException("Properties are null");
+        }
 
-            issue.setIssueName(issue.getIssueName());
-            issue.setRecommend(issue.getRecommend());
-            issue.setListIssue(issue.getListIssue());
-            issue.setProperties(issue.getProperties());
-
-            issueRepo.save(issue);
+        Optional<IssueModel> existingIssue = issueRepo.findByIssue(issueModel.getIssueName());
+        if (existingIssue.isPresent()) {
+            throw new IssueCollectionException(IssueCollectionException.IssueAlreadyExists());
         }
     }
 

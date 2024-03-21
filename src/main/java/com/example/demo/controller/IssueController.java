@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.IssueRequest;
 import com.example.demo.exception.IssueCollectionException;
 import com.example.demo.model.IssueModel;
 import com.example.demo.service.IssueService;
 
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -26,10 +26,15 @@ public class IssueController {
     private final IssueService issueService;
 
     @PostMapping("/issues")
-    public ResponseEntity<?> createIssue(@RequestBody IssueModel issue) throws IssueCollectionException {
-        issueService.createIssue(issue);
-        return new ResponseEntity<IssueModel>(issue, HttpStatus.OK);
+    public ResponseEntity<Void> createIssue(@RequestBody IssueRequest request) {
+        try {
+            issueService.createIssue(request);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (IssueCollectionException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
+    
 
     @GetMapping("/issues")
     public ResponseEntity<?> getAllIssues() throws IssueCollectionException {
@@ -55,5 +60,4 @@ public class IssueController {
         return new ResponseEntity<>("Updated issue with id " + id + "", HttpStatus.OK);
     }
 
-    
 }

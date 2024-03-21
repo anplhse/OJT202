@@ -4,7 +4,11 @@ import java.util.List;
 import com.example.demo.model.PropertyModel;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Data
 public class IssueRequest {
     private String issueName;
