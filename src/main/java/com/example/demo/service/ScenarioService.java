@@ -23,5 +23,5 @@ public interface ScenarioService {
     public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate)
             throws ScenarioCollectionException;
 
-    public void convertScenarioResponseToCsv(ScenarioPageResponse response, String outputPath) throws IOException;
+    public void convertScenarioResponseToCsv(ScenarioPageResponse response) throws IOException;
 }

@@ -3,6 +3,8 @@ package com.example.demo.service.impl;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -128,29 +130,40 @@ public class ScenarioServiceImpl implements ScenarioService {
     @Override
     public ScenarioPageResponse getAllScenarios(LocalDate startDate, LocalDate endDate)
             throws ScenarioCollectionException {
-        try {
-            Pageable pageable = Pageable.unpaged();
-            Page<ScenarioSessionModel> scenarioPage;
-
-            if (startDate != null && endDate != null) {
-                scenarioPage = scenarioRepo.findByCreatedAtBetween(startDate.atStartOfDay(), endDate.atTime(23, 59, 59),
-                        pageable);
-            } else {
-                scenarioPage = scenarioRepo.findAll(pageable);
-            }
-            return new ScenarioPageResponse(scenarioPage.getContent());
-        } catch (Exception e) {
-            throw new ScenarioCollectionException("Error retrieving scenarios: " + e.getMessage());
+        if (startDate == null || endDate == null) {
+            throw new ScenarioCollectionException("startDate and endDate must not be null");
         }
+
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            throw new ScenarioCollectionException("startDate must be before endDate");
+        }
+
+        Pageable pageable = Pageable.unpaged();
+        Page<ScenarioSessionModel> scenarioPage;
+
+        if (startDate != null && endDate != null) {
+            scenarioPage = scenarioRepo.findByCreatedAtBetween(startDate.atStartOfDay(), endDate.atTime(23, 59, 59),
+                    pageable);
+        } else {
+            scenarioPage = scenarioRepo.findAll(pageable);
+        }
+        return new ScenarioPageResponse(scenarioPage.getContent());
     }
 
     @Override
-    public void convertScenarioResponseToCsv(ScenarioPageResponse response, String outputPath) throws IOException {
+    public void convertScenarioResponseToCsv(ScenarioPageResponse response) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         List<ScenarioSessionModel> scenarios = response.getContent();
 
-        try (CSVWriter writer = new CSVWriter(new FileWriter(outputPath))) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss");
+        
+        String formattedDateTime = LocalDateTime.now().format(formatter);
 
+        String downloadsPath = System.getProperty("user.home") + "/";
+
+        String csvFileName = downloadsPath + formattedDateTime + ".csv";
+
+        try (CSVWriter writer = new CSVWriter(new FileWriter(csvFileName))) {
             writer.writeNext(new String[] { "ID", "Chart ID", "Contract", "Session ID", "Finished", "Current Scenario",
                     "Email", "Analysis Before", "Analysis After", "Created At" });
 

@@ -42,7 +42,7 @@ public class ScenarioSessionController {
 
         try {
             ScenarioPageResponse response = scenarioService.getAllScenarios(startDate, endDate);
-            scenarioService.convertScenarioResponseToCsv(response, "scenario.csv");
+            scenarioService.convertScenarioResponseToCsv(response);
             return new ResponseEntity<>("CSV file generated successfully", HttpStatus.OK);
         } catch (ScenarioCollectionException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
