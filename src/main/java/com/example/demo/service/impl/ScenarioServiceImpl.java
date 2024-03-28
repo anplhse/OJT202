@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -156,10 +157,10 @@ public class ScenarioServiceImpl implements ScenarioService {
         List<ScenarioSessionModel> scenarios = response.getContent();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss");
-        
+
         String formattedDateTime = LocalDateTime.now().format(formatter);
 
-        String downloadsPath = System.getProperty("user.home") + "/";
+        String downloadsPath = System.getProperty("user.home") + "/OneDrive/Máy tính/";
 
         String csvFileName = downloadsPath + formattedDateTime + ".csv";
 
@@ -168,6 +169,7 @@ public class ScenarioServiceImpl implements ScenarioService {
                     "Email", "Analysis Before", "Analysis After", "Created At" });
 
             for (ScenarioSessionModel scenario : scenarios) {
+                String createdAtFormatted = formatDate(scenario.getCreatedAt());
                 String[] data = new String[] {
                         scenario.getId(),
                         scenario.getChartId(),
@@ -178,10 +180,18 @@ public class ScenarioServiceImpl implements ScenarioService {
                         scenario.getEmail(),
                         objectMapper.writeValueAsString(scenario.getAnalysisBefore()),
                         objectMapper.writeValueAsString(scenario.getAnalysisAfter()),
-                        String.valueOf(scenario.getCreatedAt())
+                        createdAtFormatted
                 };
                 writer.writeNext(data);
             }
         }
+    }
+
+    private String formatDate(Date createdAt) {
+
+        LocalDateTime localDateTime = createdAt.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        return localDateTime.format(formatter);
     }
 }
